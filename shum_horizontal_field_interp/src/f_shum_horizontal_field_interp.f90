@@ -609,6 +609,17 @@ DO i=1, points
   ELSE
     b = 0.0_shum_real64
   END IF
+  ! If the target  grid-box lies completely north of the last row of theta
+  ! points, index_b_l will be limited to the penultimate row of the source
+  ! domain, so b will be greater than 1, leading to weight_b_[l,r] being
+  ! negative, which will subsequently cause the contributions from those
+  ! points to be zeroed and in turn leave unbalanced contributions from the
+  ! top points. In most cases, this will not happen because the source
+  ! domain should extend beyond the target one. However, in the case of a
+  ! high-resolution domain covering the North Pole, it cannot be avoided,
+  ! so it is still necessary to limit b. A similar problem occurs at the
+  ! South Pole, where b can be negative.
+  b = MAX(0.0_shum_real64, MIN(1.0_shum_real64, b))
 
   ! Calculate bi-linear interpolation weights
   weight_t_r(i) = a*b
